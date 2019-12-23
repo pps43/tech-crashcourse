@@ -296,7 +296,7 @@ New multimedia elements: `<audio>` and `<video>`. but the easiest way to play vi
 
 ## HTML Game
 
-Use Canvas to render because [this](onenote:#HTML Crash Course&section-id={5CF4E764-BEF9-4C4A-8CD3-8F1CA420409C}&page-id={91232D26-DB6C-430F-B6F6-A3EC72B5B842}&object-id={40D5B36D-9C9E-4DE9-B7EB-541046E5B972}&62&base-path=https://d.docs.live.net/56d38339d2d497d4/文档/赵锦程 的笔记本/Quick Notes.one).
+Use Canvas to render.
 
 Use `<body onload="StartGame">` to call StartGame().
 

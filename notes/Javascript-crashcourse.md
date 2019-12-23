@@ -1,3 +1,26 @@
+## Content
+
+- [Background](#background)
+- [Syntax](#syntax)
+    + [`let` vs `var`](#-let--vs--var-)
+    + [`null` vs `undefined`](#-null--vs--undefined-)
+    + [`==` vs `===`](#-----vs------)
+    + [Array](#array)
+    + [function](#function)
+    + [closure](#closure)
+- [OOP in JS](#oop-in-js)
+    + [new an object:](#new-an-object-)
+    + [add/remove property to object:](#add-remove-property-to-object-)
+    + [keyword `this`](#keyword--this-)
+    + [keyword `new`](#keyword--new-)
+    + [no class but prototype](#no-class-but-prototype)
+    + [deep-copy](#deep-copy)
+- [More topic on JS](#more-topic-on-js)
+
+
+
+---
+
 Reference: MDN, [LearnXInYMinutes](https://learnxinyminutes.com/docs/javascript/),
 
 More readings: [JS Design Pattern](https://addyosmani.com/resources/essentialjsdesignpatterns/book/), 

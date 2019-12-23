@@ -21,7 +21,7 @@ HTML online exercise : https://www.w3schools.com/html/exercise.asp
 
 #### CSS box model
 
-![](/Users/jason/dev/github/tech-crashcourse/res/box-model.png)
+![](../res/box-model.png)
 
 #### Element, Tag, Attribute
 
@@ -118,6 +118,8 @@ form element:
 | ` <textarea>  `                          |                                                              |
 | `<button type="button" onclick="xxx">  ` |                                                              |
 
+
+
 #### Entites & symbols
 
 | name                |            |
@@ -127,9 +129,7 @@ form element:
 | non-breaking space  | ` &nbsp;`  |
 | non-breaking hyphen | ` &#8209;` |
 
-https://www.w3schools.com/html/html_entities.asp
-
-https://www.w3schools.com/html/html_symbols.asp
+See [entities](https://www.w3schools.com/html/html_entities.asp) and [symbols](https://www.w3schools.com/html/html_symbols.asp) in w3schools.
 
 
 
@@ -147,7 +147,7 @@ URL can only be sent over the Internet using the ASCII char-set.
   - Curly braces hold objects
   - Square brackets hold arrays
 
-- JSON.stringify, JSON.parse
+- `JSON.stringify`, `JSON.parse`
 
  
 
@@ -163,11 +163,15 @@ parentNode.appendChild
 element.innerHTML/styles/setAttribute/addEventListener
 ```
 
+
+
 DOM event flow
 
 - capture phase
 - target phase
 - bubbleing phase
+
+
 
 Virtual DOM
 
@@ -179,7 +183,9 @@ Virtual DOM
 
 - Framework like React uses this tech.
 
-#### window
+
+
+#### `window`
 
 a global object as root. Implemented by browser, not js.
 
@@ -219,7 +225,7 @@ New graphic elements: `<svg>` and `<canvas>`.
 
   `<svg>` is drawn as an object in the SVG DOM. Any changes on one object will redraw it automatically.
 
-  ![](/Users/jason/dev/github/tech-crashcourse/res/svg-canvas.png)
+  ![](../res/svg-canvas.png)
 
 New multimedia elements: `<audio>` and `<video>`. but the easiest way to play video is to use youtube.
 
@@ -242,15 +248,16 @@ New multimedia elements: `<audio>` and `<video>`. but the easiest way to play vi
   - window.sessionStorage (destroyed when tab closed)
 
 - HTML Application Cache
-- HTML Web Workers
+- **HTML Web Workers**
+  
   - Web workers are **real** multi-threads.
   - To keep simplicity, workers and main thread(webpage) don't share data.
     - workers cannot access DOM
     - main thread push data to workers by clone. (`worker.postMessage` function)
     - workers return data to main thread by event.(`worker.onmessage` handler)
     - also see [here](https://stackoverflow.com/questions/9708113/since-javascript-is-single-threaded-how-are-web-workers-in-html5-doing-multi-th).
-  - Web workers are not part of javascript but a browser feature. Usage see [here](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers).
-
+- Web workers are not part of javascript but a browser feature. Usage see [here](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers).
+  
 - HTML SSE (Server-Sent Events)
 
   e.g. Twitter uptes, stock price updates, etc.

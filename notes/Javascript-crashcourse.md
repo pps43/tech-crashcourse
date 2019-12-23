@@ -2,7 +2,7 @@ Reference: MDN, [LearnXInYMinutes](https://learnxinyminutes.com/docs/javascript/
 
 More readings: [JS Design Pattern](https://addyosmani.com/resources/essentialjsdesignpatterns/book/), 
 
- 
+---
 
 ## Background
 

@@ -21,9 +21,9 @@
 
 ---
 
-Reference: MDN, [LearnXInYMinutes](https://learnxinyminutes.com/docs/javascript/),
+Reference: [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [LearnXInYMinutes](https://learnxinyminutes.com/docs/javascript/),
 
-More readings: [JS Design Pattern](https://addyosmani.com/resources/essentialjsdesignpatterns/book/), 
+More readings: [JS Design Pattern](https://addyosmani.com/resources/essentialjsdesignpatterns/book/), [JS Questions](https://github.com/yangshun/front-end-interview-handbook/blob/master/questions/javascript-questions.md),
 
 ---
 

@@ -281,8 +281,8 @@ Prototype is binded in 2 ways and always shared by reference.
 ## More topic on JS
 
 - Memory Management & GC
-
 - Concurrency & Event loop
 - Package & Library
 - Typescript
 - NodeJS
+- Abstract Syntax Tree (AST) for JS

@@ -11,6 +11,7 @@
 - [OOP in JS](#oop-in-js)
     + [new an object:](#new-an-object-)
     + [add/remove property to object:](#add-remove-property-to-object-)
+    + [operator `...`](#operator---)
     + [keyword `this`](#keyword--this-)
     + [keyword `new`](#keyword--new-)
     + [no class but prototype](#no-class-but-prototype)
@@ -170,6 +171,26 @@ Object.defineProperty(a, 'name', {
 	configurable : true,
 	enumerable: true}
 );
+```
+
+
+
+#### operator `...`
+
+Use `...` in 2 ways.
+
+- rest operator in function definition.
+
+```js
+function func(a,b,...args) {console.log(args);}
+
+func(1,2,3,4); //args = [3,4], which is an array.
+```
+
+- spread operator in function call.
+
+```js
+func(...[1,2,3,4]);//break the array into pieces, the same as func(1,2,3,4)
 ```
 
 

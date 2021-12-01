@@ -1,6 +1,6 @@
 # Golang
 
-![](E:\Github\tech-crashcourse\res\Golang.png)
+![](../res/Golang.png)
 
 
 ### entry

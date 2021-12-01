@@ -155,14 +155,21 @@ m2 := map[string]int {} // Same effect as m. Called composite literals
 https://stackoverflow.com/questions/9320862/why-would-i-make-or-new
 https://stackoverflow.com/questions/31064688/which-is-the-nicer-way-to-initialize-a-map
 
+### stack/heap
+- Go automatically handles whether on heap or stack.
+- Compile-time `escape analysis`. (escape to heap)
+- GC handles those on heap.
+
 ### control flow
 - for
 - if
-- switch
+- switch, `fallthrough`
 - `select` to monitor multiple `channel` state
 - `defer`
 
 `defer` exec when exit current scope. Multiple defers in LIFO(stack) manner.
+
+Go use `break` automatically in `switch`, otherwise you need `fallthrough`.
 
 ### goroutine
 - one thread, multiple goroutines

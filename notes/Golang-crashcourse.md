@@ -115,25 +115,66 @@ An object of `interface` type has 2 pointers: a pointer to `iTable` of actual ty
 
 `iTable` contains type info and a method collection.
 
-
+https://halfrost.com/go_interface/
 
 #### channel
 - no buffer: Both sides should be ready at same time, or wait/blocked for other.
 - buffered: Queue. Receiver waits if channel empty, sender waits if channel full.
+- read-only channel `<-chan`, write-only channel `chan<-`
+- channel can be used as a sync mechanism.
+
+[Concurrency-in-Go]https://www.youtube.com/watch?v=LvgVSSpwND8
 
 ##### code
 ```go
-nobuffer := make(chan int)
-buffered := make(chan int, 10)
+nobufferChannel := make(chan int) // `int` can be other types, including pointer
+bufferedChannel := make(chan int, 10)
 
-buffered <- 9 // send a int to channel
+bufferedChannel <- 9 // send a int to channel
 
-v, ok := <- buffered // receive a int from channel
+v, ok := <- bufferedChannel // receive a int from channel
 if !ok {
-    // channel is empty and closed
+  // channel is closed
 }
 
-close(buffered)
+for msg := range bufferedChannel {
+  // auto break when channel close. "range" here is a sugar
+}
+
+// only sender should close. Sending to a closed channel will panic
+close(bufferedChannel)
+
+for { // inf loop
+  select { // select randomly when any channel has content
+  case msg1 := <- nobufferChannel:
+    // do something
+  case msg2 := <- bufferChannel:
+    // do something
+  }
+}
+
+// worker pool pattern
+func worker(jobs <-chan int, results chan<- int) {
+  for n:= range jobs {
+    results <- n*n
+  }
+}
+func main(){
+  jobs := make(chan int, 10)
+  results := make(chan int, 10)
+  go worker(jobs, results)
+  go worker(jobs, results)
+  go worker(jobs, results)
+  go worker(jobs, results)
+  for i:= 0; i < 10; i++ {
+    jobs <- i
+  }
+  close(jobs)
+  for j:=0; j < 10; j++ {
+    fmt.Println(<-results)
+  }
+}
+
 ```
 
 ### new/make
@@ -164,7 +205,7 @@ https://stackoverflow.com/questions/31064688/which-is-the-nicer-way-to-initializ
 - for
 - if
 - switch, `fallthrough`
-- `select` to monitor multiple `channel` state
+- `select` to multiplex multiple `channel`
 - `defer`
 
 `defer` exec when exit current scope. Multiple defers in LIFO(stack) manner.
@@ -185,6 +226,11 @@ Go use `break` automatically in `switch`, otherwise you need `fallthrough`.
 - `v, error := func()`
 
 Go has no exception mechanism. You have to deal with error where it happens.
+
+### reflection
+
+https://github.com/Ompluscator/dynamic-struct
+https://halfrost.com/go_reflection/
 
 ### misc
 

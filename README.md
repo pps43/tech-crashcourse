@@ -8,20 +8,11 @@ The best thing of taking notes in English is that it helps me achieve both goals
 
 Now, let us join my coding adventure!
 
-## before learning
-
-While I am learning, I am also curious about how to learn fast and learn smart. There are so many methodologies out there, but I find these tips a lot easier to follow:
-
-- Take breaks between every 30 min. (Gradually you can keep concentrated longer.)
-- Create a dedicated study area. (Even use a 'study-only' lamp.)
-- How to read textbooks. (Go through it to find important concepts and questions before read.)
-- Memorize by rote or active learning. 
-- Really know it, rather than recognize it. (Only if you can repeat it are you able to master it.)
-- Teach others in your own words. (Even explain to an unreal person)
-
 ## content
 
 [HTML-crashcourse](./notes/HTML-crashcourse.md)
-
 [Javascript-crashcourse](./notes/Javascript-crashcourse.md)
+[Grpc-crashcourse](notes/Grpc-crashcourse.md)
+[Golang-crashcourse](./notes/Golang-crashcourse.md)
+[ASP.NETCore-crashcourse](notes/AspDotnetCore-crashcourse.md)
 

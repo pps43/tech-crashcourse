@@ -1,6 +1,5 @@
 # Golang
 
-
 - [Golang](#golang)
 - [project basics](#project-basics)
   - [env](#env)
@@ -26,13 +25,17 @@
   - [reflection](#reflection)
   - [misc tools](#misc-tools)
     - [print](#print)
-    - [generator](#generator)
+    - [io](#io)
+    - [race detection](#race-detection)
+    - [go generate](#go-generate)
+    - [text/template](#texttemplate)
     - [go test](#go-test)
     - [pprof](#pprof)
 - [pitfalls \& tricks](#pitfalls--tricks)
   - [go version](#go-version)
   - [variadic params](#variadic-params)
   - [interface](#interface-1)
+  - [protobuf](#protobuf)
 
 # project basics
 
@@ -146,18 +149,26 @@ s4 := [][]int {{1}, {1, 2}} // high dim
 
 ### map
 
+In Golang, `map` is implemented on HashMap, and is not designed for concurrency (Only concurrent-read, see [stackoverflow discuss](https://stackoverflow.com/questions/36167200/how-safe-are-golang-maps-for-concurrent-read-write-operations)).
+
 ```go
 m := map[string]int{"three": 3, "four": 4}
+
+// add or modify
 m["one"] = 1
+
+// remove
 delete(, "three")
 
+// get
 v, ok := m["two"]
 if ok {
-  // has key
+  // has
 }
 
+// random order
 for k, v := range m {
-  // v is a copy
+  // notice: v is a copy
 }
 ```
 
@@ -195,9 +206,14 @@ func (u *User) foo() {
 
 You don't have to "implement" an interface explicitly in Go. Go acts like an pure dynamic language, aka duck=typing. Mechanism explained [here](https://research.swtch.com/interfaces), and [more about interface](https://sanyuesha.com/2017/07/22/how-to-understand-go-interface/).
 
-An object of `interface` type has 2 pointers: a pointer to `iTable` of actual type, a pointer to object of actual type.
+An object of `interface` type has 2 pointers: a pointer to `iTable` of actual type, a pointer to object of actual type. `iTable` contains type info and a method collection.
 
-`iTable` contains type info and a method collection.
+```go
+type iface struct {
+  tab *itab
+  data unsafe.Pointer
+}
+```
 
 See more on
 
@@ -306,6 +322,7 @@ https://stackoverflow.com/questions/31064688/which-is-the-nicer-way-to-initializ
 - function `main()` in `main.go`
 - function `init()`, executed before `main()`
 - multiple return values, using `_` to omit
+- **NO support for function overloading** (for compiler speed and [Go team's taste](https://go.dev/doc/faq#overloading))
 
 ## goroutine
 
@@ -366,6 +383,7 @@ func DoJob(wg *sync.WaitGroup) {
 ```
 
 - use [`Context`](https://go.dev/blog/context) to put more control on multi-level goroutine. Very common in handle web requests. See [official examples](https://pkg.go.dev/context)
+
 > In Go servers, each incoming request is handled in its own goroutine. Request handlers often start additional goroutines to access backends such as databases and RPC services. The set of goroutines working on a request typically needs access to request-specific values such as the identity of the end user, authorization tokens, and the request’s deadline. When a request is canceled or times out, all the goroutines working on that request should exit quickly so the system can reclaim any resources they are using.
 
 ```go
@@ -396,7 +414,6 @@ func main() {
 
 ```
 
-
 ## error handling
 
 - `panic`, `recover`. When panic, all predefined `defer` will run, then program `exit(2)`.
@@ -409,7 +426,7 @@ Go has no exception mechanism. You have to deal with error where it happens.
 > Sometimes we want an object lives on stack, in c# you can use `Span` but in Go it's impossible.
 
 - GC handles heap memory, but way too expensive than stack memory.
-  - More about [Go GC](https://go.dev/doc/gc-guide)
+    - More about [Go GC](https://go.dev/doc/gc-guide)
 - Go automatically handles whether on heap or stack via compiler's `escape analysis`.
     - If a function returns a pointer to its local var, escape happens.
     - If a local var is too large(or unkonwn) to be on stack, escape happens.
@@ -419,8 +436,29 @@ Go has no exception mechanism. You have to deal with error where it happens.
 
 ## reflection
 
-https://github.com/Ompluscator/dynamic-struct
-https://halfrost.com/go_reflection/
+`reflect` package provides representation and operations of type info and value info in `interface`.
+
+```go
+func ValueOf(i interfae{}) reflect.Value
+func TypeOf(i interfae{}) reflect.Type
+```
+
+Use reflection to
+- get `reflection representation` on any object
+- get original object from `reflection representation`
+- modify value of original object from `reflection representation`. (Sometimes we need to pass pointer and retrieve by `Elem()`)
+
+```go
+var x float64 = 0.1
+v := reflect.ValueOf(&x)
+v.Elem().SetFloat(6.6)
+fmt.Println(v.Elem().Interface()) //6.6
+fmt.Println(x) //6.6
+```
+
+See more on 
+- https://github.com/Ompluscator/dynamic-struct
+- https://halfrost.com/go_reflection/
 
 ## misc tools
 
@@ -439,26 +477,94 @@ resultString, err := json.Marshal(myStructObj)
 
 ```
 
-### generator
+`fmt.FPrintf`
 
-[`genny`, Generics for Go](https://github.com/cheekybits/genny)
-[`gen`, a code-generation tool for Go](https://github.com/clipperhouse/gen)
+### io
+
+- Read/Write Json
+```go
+var jsonObject MyJsonObject
+
+if bt, err := ioutil.ReadFile("xxx.json"); err == nil {
+  if err2 := json.Unmarshal(bt, &jsonObject); err2 == nil {
+    // use jsonObject
+  }
+}
+
+if bt, err := json.Marshal(jsonObject); err == nil {
+  if err2 := ioutil.WriteFile(filePath, bt, 0666); err2 != nil { // 0666 is permission mask
+    // handle error
+  }
+}
+```
+
+- Read csv
+```go
+allRecords := make([]map[string]string, 0) // array of map
+headerLines := 1 // num of rows that are headers, not data
+
+if bt, err := ioutil.ReadFile("xxx.csv"); err == nil {
+  reader := csv.NewReader(bt)
+  if data, err2 := reader.ReadAll(); err == nil {
+    // data is [][]string
+    header := data[0]
+
+    for i, line := range data {
+      if i < headerLines {continue} //omit headers
+
+      if len(line) < len(header) {continue} // omit invalid line
+
+      // Your logic:
+      record := map[string]string
+      for j, field := range line {
+        record[header[j]] = field
+      }
+      allRecords = append(allRecords, record)
+    }
+  }
+}
+```
+
+### race detection
+
+`go run -race xxx.go`
+
+### go generate
+
+Used for code-generation. [Official blog](https://go.dev/blog/generate). [Stackoverflow example](https://stackoverflow.com/questions/37362054/explain-go-generate-in-this-example)
+
+Other code-generation framework.
+
+- [`genny`, Generics for Go](https://github.com/cheekybits/genny)
+- [`gen`, a code-generation tool for Go](https://github.com/clipperhouse/gen)
+
+### text/template
+
+Used for code-generation, too. [Official doc](https://pkg.go.dev/text/template). [Go by example](https://gobyexample.com/text-templates).
+
+There’re two packages operating with templates — `text/template` and `html/template`. Both provide the same interface, however the html/template package is used to generate HTML output safe against code injection.
+
+> Data + Template => Generated File
+
+Besides simple text substitution, you can use `if/else/end, range, break, continue...` in template to be more flexible.
 
 ### go test
 
 - create a go file, name ends with `_test`
 - `import "testing"`
-  - `import "net/http/httptest"` to mock http
+    - `import "net/http/httptest"` to mock http
 - `func TestXXX(t *testing.T)` for unit test (UT), use `t.Fatalf(msg)` to give an error.
 - `func BenchmarkXXX(b *testing.B)` for performance test (PT), user `b.ResetTimer()` to reset time now.
 
 Use cli
+
 - `go test -v` for all tests
 - `go test -v -run="xxx"` for specific UT (xxx can be regex)
 - `go test -v -run="none" -bench="xxx"` for specific PT (xxx can be regex)
 - `go test -v -run="none" -bench="xxx" -benchmem` to see allocation
 
 Or use GoLand
+
 - for UT, just click green button on each test, or run all UT in a folder.
 - for PT, click green button and choose "Profile with CPU/Mem..." to see flamegraph/calltree/etc.
 
@@ -467,6 +573,8 @@ Or use GoLand
 On windows, install [Graphviz](https://graphviz.org/download/) before open pprof result in browser.
 
 # pitfalls & tricks
+
+Go team explained why they make these choices on [FAQ](https://go.dev/doc/faq).
 
 ## go version
 
@@ -562,3 +670,7 @@ func main() {
 }
 
 ```
+
+## protobuf
+
+- [Unmarshal into incorrect type does NOT result in error](https://github.com/protocolbuffers/protobuf/issues/7946). A bytes can be forcely translated into different type with unexpected value, but `err := protobuf.Unmarshal(bytes, msg)` is no error. Official says it's expected behaviour.

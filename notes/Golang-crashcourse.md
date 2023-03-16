@@ -11,8 +11,8 @@
     - [array](#array)
     - [slice](#slice)
     - [map](#map)
-    - [struct](#struct)
     - [interface](#interface)
+    - [struct](#struct)
     - [channel](#channel)
   - [variable](#variable)
     - [new/make](#newmake)
@@ -35,6 +35,10 @@
   - [go version](#go-version)
   - [variadic params](#variadic-params)
   - [interface](#interface-1)
+    - [How to check nil on interface{}?](#how-to-check-nil-on-interface)
+    - [How to cast interface{} to concrete type?](#how-to-cast-interface-to-concrete-type)
+    - [How to explicitly declare a struct implement an interface?](#how-to-explicitly-declare-a-struct-implement-an-interface)
+    - [How to achieve polymorphism via interface?](#how-to-achieve-polymorphism-via-interface)
   - [protobuf](#protobuf)
 
 # project basics
@@ -172,39 +176,15 @@ for k, v := range m {
 }
 ```
 
-### struct
-
-Use struct do define customer type. Struct can hold other structs, golang use combination rather than inheritance to reuse code and encapsulate objects.
-
-Two language sugar are added: `anonymous field` and `promoted field`. (see [this answer](https://stackoverflow.com/questions/28014591/nameless-fields-in-go-structs)) Generally, if struct A has a anonymous field which is struct type, its members and functions are automatically promoted to A (writing as A.x), unless A already has a member with same name.
-
-- type XX struct {...}
-- type XX int64
-- function with receiver to mimic member function
-
-```go
-type User struct {
-  name string
-  id uint64
-}
-
-// use this if you want u is a copy
-func (u User) foo() {
-
-}
-// use this if you want u is a reference, COMMON USAGE
-func (u *User) foo() {
-
-}
-```
-
 ### interface
 
-- support polymorphism
-- support duck-typing, just like `js`
-- use empty `interface{}` as parameter to accept all types
+- To support polymorphism
+- To support duck-typing, like `js`
+- Only have functions declaration to define the "shape"
+- Use empty `interface{}` as parameter to accept all types
+- Interface can embed other interface, similar to `interface IFooBar: IFoo, IBar` in other languages. (Notice, if two embeded interfaces have same function declaration, compiler will raise error if Go version <= 1.14)
 
-You don't have to "implement" an interface explicitly in Go. Go acts like an pure dynamic language, aka duck=typing. Mechanism explained [here](https://research.swtch.com/interfaces), and [more about interface](https://sanyuesha.com/2017/07/22/how-to-understand-go-interface/).
+You don't have to (Or have no means to) implement an interface explicitly in Go. Go acts like an pure dynamic language, aka duck-typing. Mechanism explained [here](https://research.swtch.com/interfaces), and [more about interface](https://sanyuesha.com/2017/07/22/how-to-understand-go-interface/).
 
 An object of `interface` type has 2 pointers: a pointer to `iTable` of actual type, a pointer to object of actual type. `iTable` contains type info and a method collection.
 
@@ -216,10 +196,63 @@ type iface struct {
 ```
 
 See more on
-
 - https://halfrost.com/go_interface/
 - https://zhaolion.com/post/golang/upgrade/interface/
 - https://github.com/teh-cmc/go-internals/blob/master/chapter2_interfaces/README.md
+
+
+### struct
+
+Use struct to define custom type. Struct can **embed** other structs/interface, Golang uses **combination rather than inheritance** to reuse code and encapsulate objects.
+
+Use function with receiver to mimic member function, e.g.,
+```go
+type User struct {
+  name string
+  id uint64
+}
+
+// use this if you want u as reference. Use this for most time!
+func (u *User) login() {
+}
+// use this if you want u as copy
+func (u User) login2() {
+}
+```
+
+Two language sugar are used heavily: `anonymous field` and `promoted field` (see [this answer](https://stackoverflow.com/questions/28014591/nameless-fields-in-go-structs)). Generally, if struct A has a anonymous field which is struct type B, B's members and functions are automatically promoted to A (writing as A.x, equals to A.B.x), unless A already has a member with same name.
+
+Example 1, embedding struct with no name,when you call `AdminUser.login()`, you actually call `User.login()`.
+```go
+type AdminUser struct {
+  User
+  //...
+}
+```
+But when you implement the same function, it will cast the embedding one, unless you call `AdminUser.User.login()`
+```go
+func (u *AdminUser) login() {
+}
+```
+
+Example 2, embedding interface with no name, when you call `AdminUser.WriteData(u)`, you actually call `AdminUser.IDataWriter.WriteData(u)`. 
+```go
+type IDataWriter interface {
+  WriteData(u *User)
+}
+type AdminUser struct {
+  User
+  IDataWriter
+}
+```
+In order not to raise an null reference error, either you pass an real object which implements `IDataWriter` to `AdminUser`, or implement the method iin `AdminUser` itself (to cast default function call).
+```go
+func (u *AdminUser) WriteData(u *User) {
+}
+```
+
+
+
 
 ### channel
 
@@ -604,23 +637,25 @@ func B(args ...interface{}) {
 
 ## interface
 
-- How to check nil on interface{}?
+### How to check nil on interface{}?
 
-> [stackoverflow](https://stackoverflow.com/questions/13476349/check-for-nil-and-nil-interface-in-go)
-> If `var a interface{}`, `a == nil` is NOT enough to validate, because underlying value can still be nil while `a != nil`.
+[stackoverflow](https://stackoverflow.com/questions/13476349/check-for-nil-and-nil-interface-in-go)
 
-- How to cast interface{} to concrete type?
+If `var a interface{}`, `a == nil` is NOT enough to validate, because underlying value can still be nil while `a != nil`.
 
-> The only right way is `v, ok := a.(T)` and check if `ok`. Otherwise you still get `false` when `a.(bool)` and `a is nil`.
+### How to cast interface{} to concrete type?
 
-- How to explicitly declare a struct implement an interface?
+The only right way is `v, ok := a.(T)` and check if `ok`. Otherwise you still get `false` when `a.(bool)` and `a is nil`.
 
-> [stackoverflow](https://stackoverflow.com/questions/31753282/go-how-to-explicitly-state-that-a-structure-is-implementing-an-interface)
-> The only right way (trick) is adding `var _ IYourInterface = (*YourType)(nil)` where you want to validate.
+### How to explicitly declare a struct implement an interface?
 
-- How to achieve polymorphism via interface?
+[stackoverflow](https://stackoverflow.com/questions/31753282/go-how-to-explicitly-state-that-a-structure-is-implementing-an-interface)
 
-> It's trickier than you think. The "type" info stored in an interface variable is NOT always real, it's just inferred from context. If context does NOT give enough information what the real type is, polimorphism will fail. The trick is, passing subclass type to baseclass type and stored as a property `internal`, now even you just got a baseclass pointer, you can still call subclass's Foo().
+The only right way (trick) is adding `var _ IYourInterface = (*YourType)(nil)` where you want to validate.
+
+### How to achieve polymorphism via interface?
+
+It's trickier than you think. The "type" info stored in an interface variable is NOT always real, it's just inferred from context. If context does NOT give enough information what the real type is, polimorphism will fail. The trick is, passing subclass type to baseclass type and stored as a property `internal`, now even you just got a baseclass pointer, you can still call subclass's Foo().
 
 ```go
 package main

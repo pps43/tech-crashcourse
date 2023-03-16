@@ -203,9 +203,7 @@ See more on
 
 ### struct
 
-Use struct to define custom type. Struct can **embed** other structs/interface, Golang uses **combination rather than inheritance** to reuse code and encapsulate objects.
-
-Use function with receiver to mimic member function, e.g.,
+Use struct to define custom type.  Use function with receiver to mimic member function, e.g.,
 ```go
 type User struct {
   name string
@@ -220,7 +218,7 @@ func (u User) login2() {
 }
 ```
 
-Two language sugar are used heavily: `anonymous field` and `promoted field` (see [this answer](https://stackoverflow.com/questions/28014591/nameless-fields-in-go-structs)). Generally, if struct A has a anonymous field which is struct type B, B's members and functions are automatically promoted to A (writing as A.x, equals to A.B.x), unless A already has a member with same name.
+Struct can **embed** other structs/interface, Golang uses combination rather than inheritance to reuse code and encapsulate objects. Two language sugar are used heavily: `anonymous field` and `promoted field` (see [this answer](https://stackoverflow.com/questions/28014591/nameless-fields-in-go-structs)). Generally, if struct A has a anonymous field which is struct type B, B's members and functions are automatically promoted to A (writing as A.x, equals to A.B.x), unless A already has a member with same name.
 
 Example 1, embedding struct with no name,when you call `AdminUser.login()`, you actually call `User.login()`.
 ```go
@@ -245,14 +243,12 @@ type AdminUser struct {
   IDataWriter
 }
 ```
-In order not to raise an null reference error, either you pass an real object which implements `IDataWriter` to `AdminUser`, or implement the method iin `AdminUser` itself (to cast default function call).
+In order not to raise an null reference error, either you pass an real object which implements `IDataWriter` to `AdminUser` object, or implement all methods of `IDataWriter` in `AdminUser` itself (to cast default function call).
 ```go
 func (u *AdminUser) WriteData(u *User) {
 }
 ```
-
-
-
+Read more about embedding interface [here](https://eli.thegreenplace.net/2020/embedding-in-go-part-3-interfaces-in-structs/)
 
 ### channel
 
@@ -613,6 +609,7 @@ Go team explained why they make these choices on [FAQ](https://go.dev/doc/faq).
 
 - Go1.10 does not support `gopls`
 - Go1.10 has bad performance on interface{}, pprof shows much time on `convT2E32` (See [Go internals](https://github.com/teh-cmc/go-internals/blob/master/chapter2_interfaces/README.md), basically, it involves memory allocation when converting between concrete type and interface)
+- < Go1.14 cannot compile overlapping methods when embedding multiple interface.
 
 ## variadic params
 

@@ -34,6 +34,7 @@
 - [pitfalls \& tricks](#pitfalls--tricks)
   - [go version](#go-version)
   - [variadic params](#variadic-params)
+  - [interate over a map](#interate-over-a-map)
   - [interface](#interface-1)
     - [How to check nil on interface{}?](#how-to-check-nil-on-interface)
     - [How to cast interface{} to concrete type?](#how-to-cast-interface-to-concrete-type)
@@ -631,6 +632,10 @@ func B(args ...interface{}) {
 }
 
 ```
+
+## interate over a map
+
+Everytime you call `for range` on a same map, the order **may** be different (especially when CPU is busy) and this is [by design](https://go.dev/blog/maps). No business logic should count on the iteration order.
 
 ## interface
 
